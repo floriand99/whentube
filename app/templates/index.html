@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>WhenTube</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://bootswatch.com/4/pulse/bootstrap.min.css" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet"> 
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light">
+        <div class="container col-lg-7">
+          <a class="navbar-brand text-primary" href="/">WhenTube</a>
+      </div>
+    </nav>
+	<div class="container col-lg-7" id="app">
+		<div class="d-flex bg-white shadow rounded p-1 my-4">
+			<input v-model="link" type="text" class="p-3 w-100 border-0 rounded" placeholder="Enter a youtube video url...">
+		</div>
+        <div class="d-flex bg-white shadow rounded p-1 my-4">
+            <input v-model="keyword" type="text" class="p-3 border-0 rounded col-10" placeholder="Enter keyword...">
+            <button @click="search()" class="col-2 border-0 d-flex justify-center items-center bg-primary rounded">
+            <svg class="my-auto mx-auto" fill="white" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M23.809 21.646l-6.205-6.205c1.167-1.605 1.857-3.579 1.857-5.711 0-5.365-4.365-9.73-9.731-9.73-5.365 0-9.73 4.365-9.73 9.73 0 5.366 4.365 9.73 9.73 9.73 2.034 0 3.923-.627 5.487-1.698l6.238 6.238 2.354-2.354zm-20.955-11.916c0-3.792 3.085-6.877 6.877-6.877s6.877 3.085 6.877 6.877-3.085 6.877-6.877 6.877c-3.793 0-6.877-3.085-6.877-6.877z"/></svg>
+            </button>
+        </div>
+        {% if data %}
+    		<iframe id="player" class="py-4 col-12" height="350" :src="source" frameborder="0" allowfullscreen class="mx-auto"></iframe>
+    		<h5 class="my-2 text-center">Showing mentions of <b>"{{request.args.get('keyword')}}"</b></h5>
+            <div class="d-flex justify-content-center">
+    		<button @click="toggleView = !toggleView" class="btn btn-primary rounded shadow-sm my-4">
+    			[[!toggleView ? 'Show full transcript' : 'Show mentions']]
+    		</button>
+            </div>
+    		<div class="mentions my-4" ref="mentions" v-show="!toggleView">
+    		{% for item in data.mentions %}
+    			<div class="mention px-3 py-4 rounded d-flex">
+    				<span><a href="#player" class="bg-dark text-light px-2 py-2 mr-3 rounded" @click="getMentions({{loop.index}})">{{item['time'].split(',')[0]}}</a></span>
+    				<p class="mb-0 ms-3">{{item['text']}}</p>
+    			</div>
+    		{% endfor %}
+    		</div>
+
+    		<div v-show="toggleView" class="my-4">{{data.full_text}}</div>
+        {% endif %}
+	</div>
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#app',
+			delimiters: ['[[', ']]'],
+            data(){
+                return{
+                    link: '',
+                    keyword: '',
+                    source: `https://www.youtube.com/embed${window.location.pathname}`,
+                    toggleView: false
+                }
+            },
+			methods:{
+                search(){
+                    if(this.link && this.keyword)
+                        window.location.href = "/" + this.link.split('=')[1] + '?keyword=' + this.keyword
+                },
+				getMentions(index){
+					const [hours, minutes, seconds] = this.$refs.mentions.children[index-1].textContent.split(':').map(item => {
+						return parseInt(item)
+					})
+					const timeInSeconds = (hours * 3600) + (minutes * 60) + seconds
+					this.source = `https://www.youtube.com/embed${window.location.pathname}?start=${timeInSeconds}&autoplay=1`
+				}
+			}
+		})
+	</script>
+</body>
+</html>

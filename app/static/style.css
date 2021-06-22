@@ -1,0 +1,19 @@
+body{
+  font-family: 'Poppins', sans-serif;
+  color: #444;
+}
+a{
+	text-decoration: none;
+}
+strong{
+	background: #777;
+	padding-right: 10px;
+	padding-left: 10px;
+	color: white;
+	border-radius: 3px;
+	margin-right: 5px;
+	margin-left: 5px;
+}
+.mention:nth-child(even){
+	background-color: #f8f8f8;
+}
